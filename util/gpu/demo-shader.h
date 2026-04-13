@@ -19,10 +19,11 @@ struct glyph_vertex_t {
   /* Object-space outward normal at this vertex */
   GLfloat nx;
   GLfloat ny;
+  GLfloat color[4];
   /* Em units per object-space unit (upem / font_size) */
   GLfloat emPerPos;
   /* Atlas offset (constant across glyph) */
-  GLuint atlas_offset;
+  GLuint dataOffset, gradientDataOffset, isGroup;
 };
 
 static inline void
@@ -32,47 +33,47 @@ demo_shader_add_glyph_vertices (const demo_point_t              &p,
 				std::vector<glyph_vertex_t>     *vertices,
 				demo_extents_t                  *extents)
 {
-  if (gi->is_empty)
-    return;
+	if (extents) demo_extents_clear(extents);
+	for (const auto &layer : gi->layers) {
+		if (layer.isEmpty) continue;
+		double scale = font_size / gi->upem;
+		glyph_vertex_t quad[4];
+		for (int ci = 0; ci < 4; ci++) {
+			int cx = (ci >> 1) & 1;
+			int cy = ci & 1;
+			double ex = (1 - cx) * layer.extents.min_x + cx * layer.extents.max_x;
+			double ey = (1 - cy) * layer.extents.min_y + cy * layer.extents.max_y;
+			auto &vertex = quad[ci];
+			vertex.x = (float) (p.x + scale * ex);
+			vertex.y = (float) (p.y - scale * ey);
+			vertex.tx = (float) ex;
+			vertex.ty = (float) ey;
+			vertex.nx = cx ? 1.f : -1.f;
+			vertex.ny = cy ? -1.f : 1.f;
+			vertex.emPerPos = (float) (1.0 / scale);
+			vertex.dataOffset = layer.dataOffset;
+			vertex.gradientDataOffset = layer.gradientDataOffset;
+			vertex.isGroup = layer.isGroup ? 1 : 0;
+			vertex.color[0] = layer.r;
+			vertex.color[1] = layer.g;
+			vertex.color[2] = layer.b;
+			vertex.color[3] = layer.a;
+		}
 
-  double scale = font_size / gi->upem;
+		vertices->push_back(quad[0]);
+		vertices->push_back(quad[1]);
+		vertices->push_back(quad[2]);
 
-  glyph_vertex_t v[4];
+		vertices->push_back(quad[1]);
+		vertices->push_back(quad[2]);
+		vertices->push_back(quad[3]);
 
-  for (int ci = 0; ci < 4; ci++) {
-    int cx = (ci >> 1) & 1;
-    int cy = ci & 1;
-
-    double ex = (1 - cx) * gi->extents.min_x + cx * gi->extents.max_x;
-    double ey = (1 - cy) * gi->extents.min_y + cy * gi->extents.max_y;
-
-    v[ci].x = (float) (p.x + scale * ex);
-    v[ci].y = (float) (p.y - scale * ey);
-    v[ci].tx = (float) ex;
-    v[ci].ty = (float) ey;
-    v[ci].nx = cx ? 1.f : -1.f;
-    v[ci].ny = cy ? -1.f : 1.f;
-    v[ci].emPerPos = (float) (1.0 / scale);
-    v[ci].atlas_offset = gi->atlas_offset;
-  }
-
-  vertices->push_back (v[0]);
-  vertices->push_back (v[1]);
-  vertices->push_back (v[2]);
-
-  vertices->push_back (v[1]);
-  vertices->push_back (v[2]);
-  vertices->push_back (v[3]);
-
-  if (extents) {
-    demo_extents_clear (extents);
-    for (int i = 0; i < 4; i++) {
-      demo_point_t pt = {(double) v[i].x, (double) v[i].y};
-      demo_extents_add (extents, &pt);
-    }
-  }
+		if (extents) for (int i = 0; i < 4; i++) {
+			demo_point_t pt = {(double) quad[i].x, (double) quad[i].y};
+			demo_extents_add(extents, &pt);
+		}
+	}
 }
-
 
 GLuint
 demo_shader_create_program (void);

@@ -2,3 +2,5 @@
 
 #undef HB_NO_DRAW     /* GPU encoder uses draw API */
 #undef HB_NO_METRICS  /* Glyph advances / extents */
+#undef HB_NO_COLOR
+#undef HB_NO_PAINT

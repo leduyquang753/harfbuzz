@@ -5,15 +5,22 @@
 #ifndef DEMO_FONT_H
 #define DEMO_FONT_H
 
+#include <vector>
+
 #include "demo-common.h"
 #include "demo-atlas.h"
 
+struct LayerData {
+	demo_extents_t extents;
+	unsigned dataOffset, gradientDataOffset, dataSize;
+	float r, g, b, a;
+	bool isEmpty, isGroup;
+};
+
 typedef struct {
-  demo_extents_t extents;
   double         advance;
-  hb_bool_t      is_empty;
   unsigned int   upem;
-  unsigned int   atlas_offset;
+  std::vector<LayerData> layers;
 } glyph_info_t;
 
 

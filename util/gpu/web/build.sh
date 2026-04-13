@@ -14,6 +14,7 @@ em++ \
   -std=c++17 \
   -Oz -flto \
   -I"$SRCDIR/src" \
+  -I"$SRCDIR/subprojects/glm" \
   -I"$SRCDIR/util/gpu/web" \
   -DHAVE_CONFIG_H \
   -DHB_GPU_ATLAS_2D \

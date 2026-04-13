@@ -63,15 +63,30 @@ struct demo_renderer_gl_t : demo_renderer_t
     glVertexAttribPointer (loc, 2, GL_FLOAT, GL_FALSE, stride,
 			   (const void *) offsetof (glyph_vertex_t, nx));
 
+    loc = glGetAttribLocation (program, "a_color");
+    glEnableVertexAttribArray (loc);
+    glVertexAttribPointer (loc, 4, GL_FLOAT, GL_FALSE, stride,
+			   (const void *) offsetof (glyph_vertex_t, color));
+
     loc = glGetAttribLocation (program, "a_emPerPos");
     glEnableVertexAttribArray (loc);
     glVertexAttribPointer (loc, 1, GL_FLOAT, GL_FALSE, stride,
 			   (const void *) offsetof (glyph_vertex_t, emPerPos));
 
-    loc = glGetAttribLocation (program, "a_glyphLoc");
+    loc = glGetAttribLocation (program, "a_dataOffset");
     glEnableVertexAttribArray (loc);
     glVertexAttribIPointer (loc, 1, GL_UNSIGNED_INT, stride,
-			    (const void *) offsetof (glyph_vertex_t, atlas_offset));
+			    (const void *) offsetof (glyph_vertex_t, dataOffset));
+
+    loc = glGetAttribLocation (program, "a_gradientDataOffset");
+    glEnableVertexAttribArray (loc);
+    glVertexAttribIPointer (loc, 1, GL_UNSIGNED_INT, stride,
+			    (const void *) offsetof (glyph_vertex_t, gradientDataOffset));
+
+    loc = glGetAttribLocation (program, "a_isGroup");
+    glEnableVertexAttribArray (loc);
+    glVertexAttribIPointer (loc, 1, GL_UNSIGNED_INT, stride,
+			    (const void *) offsetof (glyph_vertex_t, isGroup));
 
     glBindVertexArray (0);
   }
